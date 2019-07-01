@@ -12,7 +12,7 @@
 * $respond question_ID
 * $set_channel -public/-private channel_name
 * $set_owner @owner_name
-* $clear_questions_cashe
+* $clear_question_cashe
 
 #### Developer Note:
 The program makes use of two .dat files to hold data. The formats are as follows:

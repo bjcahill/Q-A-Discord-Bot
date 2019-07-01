@@ -116,7 +116,7 @@ async def respond(ctx,*args):
     # everything is set up properly.
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
-        error_message = "**This command only works when used on a server." + usage_message
+        error_message = "**This command only works when used on a server.**" + usage_message
 
         await ctx.send(error_message)
         return
@@ -197,7 +197,7 @@ async def set_channel(ctx,*args):
                     "\n      **OR:** $set_channel -public #channel-name")
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
-        error_message = "**This command only works when used on a server." + usage_message
+        error_message = "**This command only works when used on a server.**" + usage_message
 
         await ctx.send(error_message)
         return
@@ -263,7 +263,7 @@ async def set_owner(ctx,*args):
     usage_message = ("\n\n**Usage:** $set_owner @owner")
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
-        error_message = "**This command only works when used on a server." + usage_message
+        error_message = "**This command only works when used on a server.**" + usage_message
 
         await ctx.send(error_message)
         return
@@ -312,7 +312,7 @@ async def clear_question_cashe(ctx,*args):
     # Error handling
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
-        error_message = "**This command only works when used on a server. " + usage_message
+        error_message = "**This command only works when used on a server.**"
 
         await ctx.send(error_message)
         return
@@ -341,6 +341,12 @@ async def help(ctx):
 
     # If the user is an admin, 
     # displays a different menu.
+
+    if isinstance(ctx.message.channel, discord.DMChannel):                      
+        error_message = "**This command only works when used on a server.**"
+
+        await ctx.send(error_message)
+        return
 
     admin = "**Viewing administrative version.**" if ctx.message.author.guild_permissions.administrator else ""
 
