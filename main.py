@@ -5,13 +5,6 @@ from file_io import *
 
 BOT_API_KEY = 'NTkxNDM4MTc2MDY5ODc3Nzcz.XQwyCg.J4evGoO5rraFIObK1idN3ypl7Rk'
 
-# These three variables are populated using 
-# user input. See $set_channel and $set_owner.
-
-# public_quesiton_id = -1
-# private_quesiton_id = -1
-# owner_id = -1
-
 # Creates the bot with the $ command prefix.
 
 client = commands.Bot(command_prefix = "$")
@@ -19,8 +12,7 @@ client.remove_command('help')
 
 # When the bot starts up, it changes it's
 # Discord presense to tell users to submit
-# quetsions. It also populates the three id
-# fields above with the correct values.
+# quetsions.
 
 @client.event
 async def on_ready():
@@ -31,7 +23,6 @@ async def on_ready():
 
     if len(bot_info_list) == 0:
         bot_info_list.append([-1,-1,-1])
-        #459149381942378496|459628370666455072|245020637230268428
 
     write_list_to_file("bot_info.dat",bot_info_list)
 
@@ -39,45 +30,6 @@ async def on_ready():
 # The question must be sent in using a DM to 
 # the bot. All arguemnts besides askquestion
 # are joined into one string.
-
-@client.command()
-async def help(ctx):
-
-    # If the user is an admin, 
-    # displays a different menu
-
-    admin = "**Viewing administrative version.**" if ctx.message.author.guild_permissions.administrator else ""
-
-    embed = discord.Embed(title="Q&A Bot", 
-    description="A Bot designed to facilitate an ongoing Q&A with PyroJoe! Created by TheVirtualEconomist. " + admin, 
-    color=discord.Color.red())
-
-    embed.add_field(name="$askquestion -a question_text", value="Use this command to submit a question to PyroJoe! " + 
-    "**The -a parameter is optional.** Use it if you want to submit a question anonymously. Make sure to DM the bot, as using the " + 
-    "command does not work in a public channel. **Example:** $askquestion Do you like pineapple on pizza?")
-    
-
-    if ctx.message.author.guild_permissions.administrator == True:
-
-        embed.add_field(name="$respond question_id", value="Administrative Command: The bot owner can use this command to respond " + 
-        "to questions submitted to the Q&A. If set up properly, the specified question will appear in the public Q&A channel " + 
-        "where the owner can respond to it like a normal discord conversation. " + "**Example:** $respond 594296975806169102")
-
-        embed.add_field(name="$set_channel -public/-private channel_id", value="Administrative Command: Use this command to " + 
-        "designate which channels will be used in the Q&A. The public channel is the channel all users see with the questions and " + 
-        "answers. The private channel is the channel where the bot owner will receive questions decide which ones to respond to. " +
-        "**Example** $set_channel -public #ongoing-q-and-a") 
-
-        embed.add_field(name="$set_owner @owner", value="Administrative Command: Use this command to set a bot owner (Probably PyroJoe). " +
-        "**Example** $set_owner @PyroJoe")
-
-        embed.add_field(name="$clear_question_cashe", value="Administrative Command: Use this command to erase all questions submitted. " +
-        "Using this command is not recommended unless you are experiencing performance issues with the bot. **Example:** $clear_question_cashe")
-
-    embed.add_field(name="$help", value="Gives this message.")
-
-    await ctx.send(embed=embed) 
-
 
 @client.command()
 async def askquestion(ctx, *args):
@@ -97,6 +49,8 @@ async def askquestion(ctx, *args):
 
     # Checks to see if the question has content.
     # If not, it gives the corresponding error.
+    # If -a is set, the question is handled 
+    # anonymously. 
 
     if len(args) > 0 and args[0] == '-a':
         anonymous = True
@@ -120,8 +74,6 @@ async def askquestion(ctx, *args):
     
     else:
         question_list.append([ctx.message.author.id,ctx.message.id,question_text])
-
-    
 
     write_list_to_file("questions.dat",question_list)
 
@@ -150,6 +102,10 @@ async def askquestion(ctx, *args):
     " sent in the following question:** (ID = " + str(ctx.message.id) + ")\n\n*" + question_text + "*") 
     await private_quesiton_channel.send(private_text)
 
+# Allows the owner of the bot to
+# "respond" to a question, causing 
+# it to appear in the public channel.
+
 @client.command()
 async def respond(ctx,*args):
 
@@ -158,6 +114,12 @@ async def respond(ctx,*args):
     # Checks to see if the command user
     # has the proper privilages and 
     # everything is set up properly.
+
+    if isinstance(ctx.message.channel, discord.DMChannel):                      
+        error_message = "**This command only works when used on a server." + usage_message
+
+        await ctx.send(error_message)
+        return
 
     if ctx.message.author.guild_permissions.administrator == False:
         error_message = "**Sorry, you must have administrator privilages to use this command.**"
@@ -210,8 +172,7 @@ async def respond(ctx,*args):
         await ctx.send(error_message)
         return
 
-    # Now the bot owner will respond 
-    # to the question and it will be
+    # Now the question will be
     # posted to the public channel.
 
     public_quesiton_channel = client.get_channel(public_quesiton_id)
@@ -222,6 +183,10 @@ async def respond(ctx,*args):
                   "\n\n*" + question_text + "*")
     await public_quesiton_channel.send(public_text)
 
+# Allows server administrators to
+# set which channels will be used
+# for the Q&A.
+
 @client.command()
 async def set_channel(ctx,*args):
 
@@ -230,6 +195,12 @@ async def set_channel(ctx,*args):
 
     usage_message = ("\n\n**Usage:** $set_channel -private #channel-name" + 
                     "\n      **OR:** $set_channel -public #channel-name")
+
+    if isinstance(ctx.message.channel, discord.DMChannel):                      
+        error_message = "**This command only works when used on a server." + usage_message
+
+        await ctx.send(error_message)
+        return
 
     if ctx.message.author.guild_permissions.administrator == False:
         error_message = "**Sorry, you must have administrator privilages to use this command.**"
@@ -255,7 +226,7 @@ async def set_channel(ctx,*args):
         await ctx.send(error_message)
         return
 
-    # Saves the entered channel.
+    # Saves the entered channel
 
     bot_info_list = file_to_list("bot_info.dat")
     if len(bot_info_list) == 0:
@@ -279,6 +250,10 @@ async def set_channel(ctx,*args):
         await ctx.send("**Correctly set the private questions channel!**")
         return
 
+# Allows server administrators to
+# set which user is the bot owner
+# for the Q&A.
+
 @client.command()
 async def set_owner(ctx,*args):
         
@@ -286,6 +261,12 @@ async def set_owner(ctx,*args):
     # is specified in the usage_message.
 
     usage_message = ("\n\n**Usage:** $set_owner @owner")
+
+    if isinstance(ctx.message.channel, discord.DMChannel):                      
+        error_message = "**This command only works when used on a server." + usage_message
+
+        await ctx.send(error_message)
+        return
 
     if ctx.message.author.guild_permissions.administrator == False:
         error_message = "**Sorry, you must have administrator privilages to use this command.**"
@@ -305,7 +286,7 @@ async def set_owner(ctx,*args):
         await ctx.send(error_message)
         return
     
-    # Saves the entered user.
+    # Saves the entered user
 
     bot_info_list = file_to_list("bot_info.dat")
     if len(bot_info_list) == 0:
@@ -318,14 +299,31 @@ async def set_owner(ctx,*args):
 
     await ctx.send("**Correctly set the owner to <@!" + str(owner_id) +">!**")
 
+# Allows server administrators to
+# clear the history of questions 
+# asked. Questions are not deleted
+# when they are responded too, so 
+# this can be used to clear data 
+# that is no longer being used.
+
 @client.command()
 async def clear_question_cashe(ctx,*args):
+    
+    # Error handling
+
+    if isinstance(ctx.message.channel, discord.DMChannel):                      
+        error_message = "**This command only works when used on a server. " + usage_message
+
+        await ctx.send(error_message)
+        return
 
     if ctx.message.author.guild_permissions.administrator == False:
         error_message = "**Sorry, you must have administrator privilages to use this command.**"
 
         await ctx.send(error_message)
         return
+
+    # Clearing the questions.dat file
 
     line_list = file_to_list("questions.dat")
     num_questions_removed = len(line_list)
@@ -334,5 +332,47 @@ async def clear_question_cashe(ctx,*args):
     write_list_to_file("questions.dat",line_list)
 
     await ctx.send("**Cleared the question cashe.** " + str(num_questions_removed) + " questions removed.")
+
+# Shows the bot's functionality
+# in a Discord Embed.
+
+@client.command()
+async def help(ctx):
+
+    # If the user is an admin, 
+    # displays a different menu.
+
+    admin = "**Viewing administrative version.**" if ctx.message.author.guild_permissions.administrator else ""
+
+    embed = discord.Embed(title="Q&A Bot", 
+    description="A Bot designed to facilitate an ongoing Q&A with PyroJoe! Created by TheVirtualEconomist. " + admin, 
+    color=discord.Color.red())
+
+    embed.add_field(name="$askquestion -a question_text", value="Use this command to submit a question to PyroJoe! " + 
+    "**The -a parameter is optional.** Use it if you want to submit a question anonymously. Make sure to DM the bot, as using the " + 
+    "command does not work in a public channel. **Example:** $askquestion Do you like pineapple on pizza?")
+    
+    if ctx.message.author.guild_permissions.administrator == True:
+
+        embed.add_field(name="$respond question_id", value="Administrative Command: The bot owner can use this command to respond " + 
+        "to questions submitted to the Q&A. If set up properly, the specified question will appear in the public Q&A channel " + 
+        "where the owner can respond to it like a normal discord conversation. " + "**Example:** $respond 594296975806169102")
+
+        embed.add_field(name="$set_channel -public/-private channel_id", value="Administrative Command: Use this command to " + 
+        "designate which channels will be used in the Q&A. The public channel is the channel all users see with the questions and " + 
+        "answers. The private channel is the channel where the bot owner will receive questions decide which ones to respond to. " +
+        "**Example** $set_channel -public #ongoing-q-and-a") 
+
+        embed.add_field(name="$set_owner @owner", value="Administrative Command: Use this command to set a bot owner (Probably PyroJoe). " +
+        "**Example** $set_owner @PyroJoe")
+
+        embed.add_field(name="$clear_question_cashe", value="Administrative Command: Use this command to erase all questions submitted. " +
+        "Using this command is not recommended unless you are experiencing performance issues with the bot. **Example:** $clear_question_cashe")
+
+    embed.add_field(name="$help", value="Gives this message.")
+
+    await ctx.send(embed=embed) 
+
+# Runs the bot
 
 client.run(BOT_API_KEY)

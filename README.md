@@ -1,18 +1,21 @@
-This is a discord bot designed to offer a Q & A experience
+## This is a discord bot designed to offer an elegant Q&A experience!
 
-Do do list:
+### There are six commands built into the bot.
 
-Add functioanlity to save owner/channels for each server
+#### Public commands:
 
-Add $respond command to respond to questions
+⋅⋅* $askquestion question_text
+⋅⋅* $help
 
-Make it so ppl can send in stuff anonymously 
-$help, changes based on wether you are an admin or not
+#### Administrative commands:
 
-make so commands can only be used within the server, not within DMs
-add a clear question cashe
+⋅⋅* $respond question_ID
+⋅⋅* $set_channel -public/-private channel_name
+⋅⋅* $set_owner @owner_name
+⋅⋅* $clear_questions_cashe
 
-Format of questions: Message_ID | Author_ID | Question_text | N/A
-New format of server_info: Public_channel |  Private_channel | Owner_ID
+#### Developer Note:
+The program makes use of two .dat files to hold data. The formats are as follows:
 
-OLD Format of server_info: Server_ID | Public_channel | Private_channel | Owner_ID
+questions.dat: Message_ID | Author_ID | Question_text
+server_info.dat: Public_channel |  Private_channel | Owner_ID
