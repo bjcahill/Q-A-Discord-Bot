@@ -3,6 +3,8 @@ from discord.ext import commands
 
 from file_io import *
 
+import datetime
+
 BOT_API_KEY = 'NTkxNDM4MTc2MDY5ODc3Nzcz.XQwyCg.J4evGoO5rraFIObK1idN3ypl7Rk'
 
 # Creates the bot with the ; command prefix.
@@ -91,16 +93,22 @@ async def askquestion(ctx, *args):
 
     anon_text = " anonymously" if anonymous else ""
     await ctx.send("**You submitted the following question" + anon_text + ":**\n\n"+ question_text + 
-        "\n\n **Note:** If this wasn't what you intended to submit, feel free to submit a another question.")
+        "\n\n**Note:** If this wasn't what you intended to submit, feel free to submit a another question.")
 
     # Notifying the #private-questions-channel.
 
     private_quesiton_channel = client.get_channel(private_quesiton_id)
-    user_name = "Anonymous" if anonymous else "<@!" + str(ctx.message.author.id) + ">"
 
-    private_text = ("**" + user_name +
-    " sent in the following question:** (ID = " + str(ctx.message.id) + ")\n\n*" + question_text + "*") 
-    await private_quesiton_channel.send(private_text)
+    embed = discord.Embed(title="Question Submitted", 
+    color=discord.Color.red())
+
+    embed.add_field(name="User", value = "<@!" + str(ctx.message.author.id) + ">")
+    embed.add_field(name="Question", value = question_text)
+    embed.add_field(name="Anonymous", value = "Yes" if anonymous else "No")
+    embed.add_field(name="ID", value = str(ctx.message.id))
+    embed.add_field(name="Time Submitted", value = datetime.datetime.now().strftime('%d-%m-%Y at %H:%M'))
+
+    await private_quesiton_channel.send(embed=embed)
 
 # Allows the owner of the bot to
 # "respond" to a question, causing 
