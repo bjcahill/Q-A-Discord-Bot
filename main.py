@@ -99,14 +99,14 @@ async def askquestion(ctx, *args):
 
     private_quesiton_channel = client.get_channel(private_quesiton_id)
 
-    embed = discord.Embed(title="Question Submitted", 
+    embed = discord.Embed(title="Question Submitted",value = "",
     color=discord.Color.red())
 
     embed.add_field(name="User", value = "<@!" + str(ctx.message.author.id) + ">")
     embed.add_field(name="Question", value = question_text)
     embed.add_field(name="Anonymous", value = "Yes" if anonymous else "No")
     embed.add_field(name="ID", value = str(ctx.message.id))
-    embed.add_field(name="Time Submitted", value = datetime.datetime.now().strftime('%d-%m-%Y at %H:%M'))
+    embed.add_field(name="Time Submitted", value = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S UTC'))
 
     await private_quesiton_channel.send(embed=embed)
 
