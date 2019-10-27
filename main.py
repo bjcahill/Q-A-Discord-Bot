@@ -4,12 +4,18 @@ from discord.ext import commands
 from file_io import *
 
 import datetime
+import configparser
 
-BOT_API_KEY = 'NTkxNDM4MTc2MDY5ODc3Nzcz.XQwyCg.J4evGoO5rraFIObK1idN3ypl7Rk'
+config = configparser.ConfigParser()
 
-# Creates the bot with the ; command prefix.
+config.read("config.ini")
 
-client = commands.Bot(command_prefix = ";")
+BOT_API_KEY = config.get('Settings', 'APIKey')
+COMMAND_PREFIX = config.get('Settings', 'CommandPrefix')
+
+# Creates the bot with the specified command prefix.
+
+client = commands.Bot(command_prefix = COMMAND_PREFIX)
 client.remove_command('help')
 
 # When the bot starts up, it changes it's
@@ -19,7 +25,7 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print('Bot is ready!')
-    await client.change_presence(activity=discord.Game(name = "Use ;askquestion or ;help!"))
+    await client.change_presence(activity=discord.Game(name = "Use " + COMMAND_PREFIX + "askquestion or " + COMMAND_PREFIX + "help!"))
 
     bot_info_list = file_to_list("bot_info.dat")
 
@@ -36,7 +42,7 @@ async def on_ready():
 @client.command()
 async def askquestion(ctx, *args):
 
-    usage_message = "\n\n**Usage:** ;askquestion question_text"
+    usage_message = "\n\n**Usage:** " + COMMAND_PREFIX + "askquestion question_text"
     anonymous = False
 
     # Checks to see if the message is a DM and
@@ -117,7 +123,7 @@ async def askquestion(ctx, *args):
 @client.command()
 async def respond(ctx,*args):
 
-    usage_message = "\n\n**Usage:** ;askquestion message_id"
+    usage_message = "\n\n**Usage:** " + COMMAND_PREFIX + "askquestion message_id"
 
     # Checks to see if the command user
     # has the proper privilages and 
@@ -139,7 +145,7 @@ async def respond(ctx,*args):
     public_quesiton_id = get_public_channel()
 
     if owner_id == -1:
-        error_message = "**A bot owner has not been set yet. Use ;set_owner to set one.**"
+        error_message = "**A bot owner has not been set yet. Use " + COMMAND_PREFIX + "set_owner to set one.**"
         await ctx.send(error_message)
         return
 
@@ -150,7 +156,7 @@ async def respond(ctx,*args):
         return
 
     if(public_quesiton_id == -1):
-        error_message = "**The public questions channel has not been set up correctly yet. Use ;set_channel**"
+        error_message = "**The public questions channel has not been set up correctly yet. Use " + COMMAND_PREFIX + "set_channel**"
 
         await ctx.send(error_message)
         return
@@ -201,8 +207,8 @@ async def set_channel(ctx,*args):
     # Parses the command for errors. Command format
     # is specified in the usage_message.
 
-    usage_message = ("\n\n**Usage:** ;set_channel -private #channel-name" + 
-                    "\n      **OR:** ;set_channel -public #channel-name")
+    usage_message = ("\n\n**Usage:** " + COMMAND_PREFIX + "set_channel -private #channel-name" + 
+                    "\n      **OR:** " + COMMAND_PREFIX + "set_channel -public #channel-name")
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
         error_message = "**This command only works when used on a server.**" + usage_message
@@ -268,7 +274,7 @@ async def set_owner(ctx,*args):
     # Parses the command for errors. Command format
     # is specified in the usage_message.
 
-    usage_message = ("\n\n**Usage:** ;set_owner @owner")
+    usage_message = ("\n\n**Usage:** " + COMMAND_PREFIX + "set_owner @owner")
 
     if isinstance(ctx.message.channel, discord.DMChannel):                      
         error_message = "**This command only works when used on a server.**" + usage_message
@@ -359,31 +365,31 @@ async def help(ctx):
     admin = "**Viewing administrative version.**" if ctx.message.author.guild_permissions.administrator else ""
 
     embed = discord.Embed(title="Q&A Bot", 
-    description="A Bot designed to facilitate an ongoing Q&A with PyroJoe! Created by TheVirtualEconomist. " + admin, 
+    description="A Bot designed to facilitate an ongoing Q&A! Created by TheVirtualEconomist. " + admin, 
     color=discord.Color.red())
 
-    embed.add_field(name=";askquestion -a question_text", value="Use this command to submit a question to PyroJoe! " + 
+    embed.add_field(name= COMMAND_PREFIX + "askquestion -a question_text", value="Use this command to submit a question! " + 
     "**The -a parameter is optional.** Use it if you want to submit a question anonymously. Make sure to DM the bot, as using the " + 
-    "command does not work in a public channel. **Example:** ;askquestion Do you like pineapple on pizza?")
+    "command does not work in a public channel. **Example:** " + COMMAND_PREFIX + "askquestion Do you like pineapple on pizza?")
     
     if ctx.message.author.guild_permissions.administrator == True:
 
-        embed.add_field(name=";respond question_id", value="Administrative Command: The bot owner can use this command to respond " + 
+        embed.add_field(name=COMMAND_PREFIX + "respond question_id", value="Administrative Command: The bot owner can use this command to respond " + 
         "to questions submitted to the Q&A. If set up properly, the specified question will appear in the public Q&A channel " + 
-        "where the owner can respond to it like a normal discord conversation. " + "**Example:** ;respond 594296975806169102")
+        "where the owner can respond to it like a normal discord conversation. " + "**Example:** " + COMMAND_PREFIX + "respond 594296975806169102")
 
-        embed.add_field(name=";set_channel -public/-private channel_id", value="Administrative Command: Use this command to " + 
+        embed.add_field(name=COMMAND_PREFIX + "set_channel -public/-private channel_id", value="Administrative Command: Use this command to " + 
         "designate which channels will be used in the Q&A. The public channel is the channel all users see with the questions and " + 
         "answers. The private channel is the channel where the bot owner will receive questions decide which ones to respond to. " +
-        "**Example** ;set_channel -public #ongoing-q-and-a") 
+        "**Example** " + COMMAND_PREFIX + "set_channel -public #ongoing-q-and-a") 
 
-        embed.add_field(name=";set_owner @owner", value="Administrative Command: Use this command to set a bot owner (Probably PyroJoe). " +
-        "**Example** ;set_owner @PyroJoe")
+        embed.add_field(name=COMMAND_PREFIX + "set_owner @owner", value="Administrative Command: Use this command to set a bot owner. " +
+        "**Example** " + COMMAND_PREFIX + "set_owner @Username")
 
-        embed.add_field(name=";clear_question_cashe", value="Administrative Command: Use this command to erase all questions submitted. " +
-        "Using this command is not recommended unless you are experiencing performance issues with the bot. **Example:** ;clear_question_cashe")
+        embed.add_field(name=COMMAND_PREFIX + "clear_question_cashe", value="Administrative Command: Use this command to erase all questions submitted. " +
+        "Using this command is not recommended unless you are experiencing performance issues with the bot. **Example:** " + COMMAND_PREFIX + "clear_question_cashe")
 
-    embed.add_field(name=";help", value="Gives this message.")
+    embed.add_field(name=COMMAND_PREFIX + "help", value="Gives this message.")
 
     await ctx.send(embed=embed) 
 
