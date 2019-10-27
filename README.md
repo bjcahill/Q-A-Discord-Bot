@@ -18,7 +18,7 @@ Note that the public channel is the channel everyone sees (displaying selected q
 
 #### Developer Note:
 
-To start the bot, you must enter your Discord client secret into the APIKey field in the config.ini file. 
+To start the bot, you must enter your Discord bot's TOKEN secret into the APIKey field in the config.ini file. 
 You can also change the bot's command prefix by changing the CommandPrefix field in the config.ini file. By default, the command prefix is ;
 
 Further, the bot makes use of two .dat files to hold data. The formats are as follows:
